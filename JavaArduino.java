@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -37,11 +38,16 @@ public class JavaArduino {
     private static ArrayList<String> listeRFID = new ArrayList<String>();
     private static ArrayList<String> listeVR = new ArrayList<String>();
     private String port,port2;
+    boolean sleep = true;
+    boolean finiParler = false;
+    BDRecVoc bdRecVoc;
+    Main mainClass;
+    
     
     public static void main(String[] args) {
-    	JavaArduino jaarRFID = new JavaArduino();
-    	jaarRFID.addToList("55555");
-    	jaarRFID.displayList(listeVR);
+    	JavaArduino jaar = new JavaArduino();
+    	jaar.displayList(listeVR);
+    	jaar.displayList(listeRFID);
     }
     
 
@@ -49,9 +55,7 @@ public class JavaArduino {
     	final Console console = new Console();
         
         console.log( "DEBUT du programme TestArduino !.." );
-        
-        
-        
+       
         do {
         
             console.log( "RECHERCHE d'un port disponible..." );
@@ -69,34 +73,83 @@ public class JavaArduino {
 
         } while (port == null);
         
-        port = "COM7";
-        port2 = "COM3";
+        port = "COM3";
+        port2 = "COM5";
         
         console.println("Connection au Port " + port+" et "+port2);
         try {
             final ArduinoUsbChannel vcpChannel = new ArduinoUsbChannel(port);
             final ArduinoUsbChannel vcpChannel2 = new ArduinoUsbChannel(port2);
-            
+       
             Thread readingThreadVR = new Thread(new Runnable() {
                 public void run() {
+                	
                     BufferedReader vcpInput2 = new BufferedReader(new InputStreamReader(vcpChannel2.getReader()));
                     
+            		
+					
                     String line;
                     try {
-
-                        while ((line = vcpInput2.readLine()) != null) {
-                        	console.log(line);
-                        	listeVR.add(line); //ADAPTER POUR REC VOC
+                    	
+                        while (true) {
+                        	console.println("");
+                        	console.println("");
+                        	
+                        	line = vcpInput2.readLine();
+                        	console.println(line);
+                        	if(sleep){
+                        		console.println("dans le sleep");
+        						vcpChannel2.getWriter().write("w2".getBytes("UTF-8"));
+        						vcpChannel2.getWriter().write('\n');
+        						sleep = false;
+                        	}
+                        	
+                        	if("FINI".equals(line)){
+                        		finiParler = true;
+                        	}
+                        	if(!finiParler){
+                        		switch(line){
+                        			case "PARC" : 
+                        				listeVR.add(line); 
+                        				break;
+                        			case "TRAVAIL" : 
+                        				listeVR.add(line);
+                        				break;
+                        			case "COPINE" :
+                        				listeVR.add(line);
+                        				break;
+                        			case "COURS" :
+                        				listeVR.add(line);
+                        				break;
+                        			case "DINGDING" :
+                        				listeVR.add(line);
+                        				break;
+                        			case "BORDEL" :
+                        				listeVR.add(line);
+                        				break;
+                        		}
+                        	}
+                        	if("SORS".equals(line)){
+                        		console.println("init");
+                        		listeVR = new ArrayList<String>();
+                        		listeRFID = new ArrayList<String>();
+        						finiParler = false;
+        						console.println("dans le sleep");
+        						vcpChannel2.getWriter().write("w2".getBytes("UTF-8"));
+        						vcpChannel2.getWriter().write('\n');
+                        	}
+                        	traiterListe(listeVR);
+                        	console.println("////");
                         	displayList(listeVR);
-                        	System.out.println("display list 1");
-                            //console.println(line);
+                        	console.println("////");
                         }
+                       
 
-                    } catch (IOException ex) {
+                    }  catch (IOException ex) {
                         ex.printStackTrace(System.err);
                     }
-                    
                 }
+            	
             }
             );
             
@@ -110,9 +163,6 @@ public class JavaArduino {
                         while ((line = vcpInput.readLine()) != null) {
                         	console.log(line);
                         	listeRFID.add(line); //ADAPTER POUR REC VOC
-                        	displayList(listeRFID);
-                        	System.out.println("display list 1");
-                            //console.println(line);
                         }
 
                     } catch (IOException ex) {
@@ -135,7 +185,7 @@ public class JavaArduino {
                 String line = console.readLine("Envoyer une ligne (ou 'fin') > ");
                 
                 if (line.length() == 0) {
-                    continue;
+                	continue;
                 }
                 
                 if ("fin".equals(line)) {
@@ -143,8 +193,9 @@ public class JavaArduino {
                     continue;
                 }
                 
-                vcpChannel.getWriter().write(line.getBytes("UTF-8"));
-                vcpChannel.getWriter().write('\n');
+                
+                
+                
                 vcpChannel2.getWriter().write(line.getBytes("UTF-8"));
                 vcpChannel2.getWriter().write('\n');
             
@@ -153,8 +204,8 @@ public class JavaArduino {
             vcpChannel.close();
             vcpChannel2.close();
 
-            readingThread.interrupt();
-            readingThreadVR.interrupt();
+            //readingThread.interrupt();
+            //readingThreadVR.interrupt();
 
             try {
                 readingThread.join(1000);
@@ -195,9 +246,29 @@ public class JavaArduino {
 		this.listeRFID = listeRFID;
 	}
 	
-	//public String traiteSring(String line){
-		//String line2;
-		//for(int i =0;)
-	//}
-	  
+	public void traiterListe(ArrayList<String> listeVR){
+		ArrayList<String> liste = new ArrayList<String>();
+    	if(listeVR.size()!=0){
+    		for(int i =1;i<listeVR.size();i++){
+    			liste.add(listeVR.get(i));
+    		}
+    		listeVR=liste;
+    	}
+	}
+	
+	
+	public ArrayList<String> connection(){
+		bdRecVoc = new BDRecVoc("sql11172522", "sql11172522", "Tclw7Ag8uh");
+		mainClass = new Main("sql11172522", "sql11172522", "Tclw7Ag8uh");
+		bdRecVoc.selectObject("parc");
+		ArrayList<String> listeObjets = bdRecVoc.getListeObjets();
+		if(listeObjets!=null){
+			return listeObjets;
+		}else{
+			System.out.println("la liste objets est vide");
+			return listeObjets;
+		}
+	}
+	
+	
 }
