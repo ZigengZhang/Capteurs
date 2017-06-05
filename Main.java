@@ -5,88 +5,180 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Main {
 	
 	private Connection conn;
     private PreparedStatement selectObjectStatement;
+    private PreparedStatement insertObjetOublieStatement;
+    private PreparedStatement insertObjetUtiliseStatement;
 	public BDRecVoc bdRecVoc;
 	public BDRFID bdRFID;
-	public ArrayList<String> listeNomsObjetsManquants;
-	public ArrayList<String> listeRFID;
-	public ArrayList<String> listeObjets;
-	public Main mainClass;
+	public ArrayList<String> listeNomsObjetsManquants =new ArrayList<String>();
+	public static ArrayList<String> listeRFID=new ArrayList<String>();
+	public ArrayList<String> listeObjets=new ArrayList<String>();
+	//public Main this;
+	public ArrayList<String> listeLieu = new ArrayList<String>();;
 	
 	public Main (String bd, String compte, String motDePasse){
+		
 		 try {
 	            //Enregistrement de la classe du driver par le driverManager
 	            Class.forName("com.mysql.jdbc.Driver");
-	            System.out.println("Driver trouvé...");
-
-	            //Création d'une connexion sur la base de donnée
+	            System.out.println("Driver trouvï¿½...");
+	           // this = new Main("sql11172522", "sql11172522", "Tclw7Ag8uh");
+	            //Crï¿½ation d'une connexion sur la base de donnï¿½e
 	            this.conn = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/" + bd, compte, motDePasse);
-	            //this.conn = DriverManager.getConnection("jdbc:mysql://localhost:8889/" + bd, compte, motDePasse);
-	            System.out.println("Connexion établie...");
+	            System.out.println("Connexion ï¿½tablie...");
 	            this.selectObjectStatement= this.conn.prepareStatement("SELECT * FROM Objets where idObjets=?;");
+	            this.insertObjetOublieStatement = this.conn.prepareStatement("INSERT INTO ObjetsOublies (idObjets,lieu,dateOubli) VALUES (?,?,?) ;");
+	            this.insertObjetUtiliseStatement = this.conn.prepareStatement("INSERT INTO ObjetsUtilises (idObjets,lieu,dateUtilisation) VALUES (?,?,?) ;");
+
 		 }catch (Exception ex) {
 	            ex.printStackTrace(System.err);
 	            System.exit(-1);
 	        }
 	    }
 	
-	public static void main(String[] args) {
-		BDRecVoc bdRecVoc = new BDRecVoc("sql11172522", "sql11172522", "Tclw7Ag8uh");
-		Main mainClass = new Main("sql11172522", "sql11172522", "Tclw7Ag8uh");
+	public Main() {
 		
-	      bdRecVoc.selectObject("parc");
-	      BDRFID bdRFID = new BDRFID();
-	      bdRFID.addToList("22");
-	      bdRFID.addToList("25");
-	      ArrayList<String> listeRFID = bdRFID.getListeRFID();
-	      ArrayList<String> listeObjets = bdRecVoc.getListeObjets();
-	      mainClass.compareLists(listeObjets,listeRFID);
 	}
-	
+	/*
+	public static void main(String[] args) {
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		//creation des objets
+		BDRecVoc bdRecVoc = new BDRecVoc("sql11172522", "sql11172522", "Tclw7Ag8uh");
+		Main main = new Main("sql11172522", "sql11172522", "Tclw7Ag8uh");
+		
+		//Interface myInterface = new Interface(800,800,main);  
+		
+		//recuperer le mot de l'interface
+		//this.nomLieu = myInterface.tfMotASaisir.getText();
+		
+		bdRecVoc.selectObject("obligatoire");
+		
+		
+		
+		//ajout des objets qui ne sont pas oubliee (RFID)
+  	    
+	      //bdRFID.addToList("25");
+	     // System.out.println("Arduino list:");
+	      
+	      //creation des listes
+	      
+	      ArrayList<String> listeObjets = bdRecVoc.getListeObjets();
+	      main.displayList(listeObjets);
+	}
+	*/
+	//methode qui detecte les objets qu'on a oublie et qu'on a sur soi
 	public void compareLists(ArrayList<String> listeObjets, ArrayList<String> listeRFID){
 		//displayList(listeObjets);
 		//displayList(listeRFID);
+		if(listeObjets.get(0)==null){
+			listeObjets.add("asfg");
+			
+		}
 		for (String itemObjets : listeObjets){
 			boolean trouve = false;
 			for (String itemRFID : listeRFID){
 				if (itemObjets.equals(itemRFID)){
 					trouve = true;
+					for(int i =0;i<this.listeLieu.size();i++){
+						ajouterObjetUtilise(itemObjets,listeLieu.get(i));
+					}
 				}
 			}
 			if (!trouve) {
 				objetManquant(itemObjets);
 			}
 		}
+		
 	}
+	
+	//methode qui ajoute les objets oublies dans le table "ObjetsOublies"
+	public int ajouterObjetOublie(String idObjet, String lieu) {
+        try {
+        	Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            this.insertObjetOublieStatement.setString(1, idObjet);
+            this.insertObjetOublieStatement.setString(2, lieu);
+            this.insertObjetOublieStatement.setTimestamp(3,timestamp);
+           // System.out.println("Id " + idObjet + " manque");
+            return this.insertObjetOublieStatement.executeUpdate();
+            
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+            return -1;
+        }
+    }
+	
+	//methode qui ajoute les objets qu'on n'a pas oublie dans le table "ObjetsUtilises"
+	public int ajouterObjetUtilise(String idObjet, String lieu) {
+        try {
+        	Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            this.insertObjetUtiliseStatement.setString(1, idObjet);
+            this.insertObjetUtiliseStatement.setString(2, lieu);
+            this.insertObjetUtiliseStatement.setTimestamp(3,timestamp);
+            //System.out.println("Id " + idObjet + " added");
+            return this.insertObjetUtiliseStatement.executeUpdate();
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+            return -1;
+        }
+    }
 	
 	 public void objetManquant(String idObjets){
 	    	try{
-	    		//for (String itemObjets : listeManquant){
-	    			listeNomsObjetsManquants = new ArrayList<String>();
 	    			this.selectObjectStatement.setString(1,idObjets); 
 	    			ResultSet result = this.selectObjectStatement.executeQuery();
 	    		
 	    			while (result.next()) {
 	    				String s =result.getString("nomObjets");
 	    				listeNomsObjetsManquants.add(s);
+	    				
+	    				
+	    				//ajouterObjetUtilise(idObjets,"PARC");
+	    				
+	    				if(this.listeLieu.get(0)!=null){
+		    				for(int i =0;i<this.listeLieu.size();i++){
+								ajouterObjetUtilise(idObjets,this.listeLieu.get(i));
+							}
+	    				}
 	    			}
-	    			System.out.println("vkjend");
 	    			displayList(listeNomsObjetsManquants);
-	    		//}
+	    			
 	    	} catch (SQLException ex) {
 	    		ex.printStackTrace(System.err);
 	    		System.exit(-1);
 	    	}
 	    }
 	
+	 //methode qui affiche les element d'une liste
 	 public void displayList(ArrayList<String> list){
+		 System.out.println("Display list:");
 	     for(String item : list){   
-	       		System.out.println(item);
+	       		System.out.println(item + " manque");
 	   	}
 	 }
 	

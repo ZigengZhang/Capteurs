@@ -1,4 +1,4 @@
-package fr.insalyon.p2i2.javaarduino;
+package fr.insalyon.p2i2.javaarduino.tdtp;
 
 import fr.insalyon.p2i2.javaarduino.util.Console;
 import fr.insalyon.p2i2.javaarduino.usb.ArduinoUsbChannel;
