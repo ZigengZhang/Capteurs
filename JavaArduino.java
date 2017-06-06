@@ -158,8 +158,12 @@ public class JavaArduino {
                         		fini2 = true;
                         		mainClass.compareLists(mainClass.listeObjets,listeRFID);
                         		displayList(mainClass.listeNomsObjetsManquants);
+                        		supprimerDoublon(mainClass.listeNomsObjetsManquants);
                         		Interface myInterface = new Interface(800,800,mainClass);  
-                        		
+                        		for(int i =0;i<getListeSon(mainClass.listeNomsObjetsManquants).size();i++){
+	        						vcpChannel2.getWriter().write(getListeSon(mainClass.listeNomsObjetsManquants).get(i).getBytes("UTF-8"));
+	        						vcpChannel2.getWriter().write('\n');
+                        		}
                         	}
                         	
                         	
@@ -171,7 +175,8 @@ public class JavaArduino {
         						console.println("dans le sleep");
         						vcpChannel2.getWriter().write("w2".getBytes("UTF-8"));
         						vcpChannel2.getWriter().write('\n');
-
+        						vcpChannel2.getWriter().write("s1".getBytes("UTF-8"));
+        						vcpChannel2.getWriter().write('\n');
                             	listeVR.add("obligatoire");
                             	listeVR.add(Meteo.tagMeteo());
                         	}
@@ -271,9 +276,7 @@ public class JavaArduino {
     	}
     }
     
-    public void addToList (String idObjets){
-    	listeRFID.add(idObjets);
-    }
+  
 
 
 	public ArrayList<String> getListeRFID() {
@@ -295,41 +298,80 @@ public class JavaArduino {
     	}
 	}
 	
-	
-	public ArrayList<String> connection(ArrayList<String> listeVR){
-		bdRecVoc = new BDRecVoc("sql11172522", "sql11172522", "Tclw7Ag8uh");
-		mainClass = new Main("sql11172522", "sql11172522", "Tclw7Ag8uh");
-		ArrayList<String> listeObjets = new ArrayList<String>();
-		for(int i=0;i<listeVR.size();i++){
-			bdRecVoc.selectObject(listeVR.get(i));
-		}
-		listeObjets.addAll(bdRecVoc.getListeObjets());
-		if(listeObjets!=null){
-			return listeObjets;
-		}else{
-			System.out.println("la liste objets est vide");
-			return listeObjets;
-		}
-	}
-	
-	public ArrayList<String> comparer(ArrayList<String> listeVR,ArrayList<String> listeRFID){
-		ArrayList<String> listeObjets = connection(listeVR);
-		ArrayList<String> listeOublies = new ArrayList<String>();
-		boolean existe = false;
-		for(int i=0;i<listeObjets.size();i++){
-			for(int j=0;j<listeRFID.size();j++){
-				if(listeObjets.get(i).equals(listeRFID.get(j))){
+	public static void supprimerDoublon(ArrayList<String> liste){
+		ArrayList<String> liste2 = new ArrayList<String>();
+		for(int i =0;i<liste.size();i++){
+			boolean existe = false;
+			for(int j=0;j<liste2.size();j++){
+				if(liste.get(i).equals(liste2.get(j))){
 					existe = true;
 					break;
 				}
 			}
 			if(!existe){
-				listeOublies.add(listeObjets.get(i));
+				liste2.add(liste.get(i));
 			}
 		}
-		return listeOublies;
+		liste = liste2;
 	}
 	
+	
+	
+	public static ArrayList<String> getListeSon(ArrayList<String> liste){
+		ArrayList<String> listeSon = new ArrayList<String>();
+		listeSon.add("s17");
+		for(int i =0;i<liste.size();i++){
+			switch(liste.get(i)){
+				case "Bouteille d'eau" :
+					listeSon.add("s2");
+					break;
+				case "Carte de Transport" :
+					listeSon.add("s3");
+					break;
+				case "Carte Etudiant" :
+					listeSon.add("s4");
+					break;
+				case "Carte Vital" :
+					listeSon.add("s5");
+					break;
+				case "Chapeau" :
+					listeSon.add("s6");
+					break;
+				case "Clés" :
+					listeSon.add("s7");
+					break;
+				case "Clés de Voiture":
+					listeSon.add("s8");
+					break;
+				case "Echarpe" :
+					listeSon.add("s9");
+					break;
+				case "Ecouteurs" :
+					listeSon.add("s10");
+					break;
+				case "Lunettes" :
+					listeSon.add("s11");
+					break;
+				case "Lunettes de Soleil" :
+					listeSon.add("s12");
+					break;
+				case "Mouchoirs" :
+					listeSon.add("s13");
+					break;
+				case "Parapluie" :
+					listeSon.add("s14");
+					break;
+				case "Protefeuille" :
+					listeSon.add("s15");
+					break;
+				case "Telephone" :
+					listeSon.add("s16");
+					break;
+					
+			}
+		}
+		return listeSon;
+	}
 	
 }
 

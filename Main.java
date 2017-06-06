@@ -17,7 +17,6 @@ public class Main {
     private PreparedStatement insertObjetOublieStatement;
     private PreparedStatement insertObjetUtiliseStatement;
 	public BDRecVoc bdRecVoc;
-	public BDRFID bdRFID;
 	public ArrayList<String> listeNomsObjetsManquants =new ArrayList<String>();
 	public static ArrayList<String> listeRFID=new ArrayList<String>();
 	public ArrayList<String> listeObjets=new ArrayList<String>();
